@@ -34,13 +34,13 @@ public class RaycastForCarScript : MonoBehaviour {
 	void Update ()
     {
         Vector3 origin = new Vector3(transform.position.x, transform.position.y + 200, transform.position.z + 350);
-        sensor1Distance = CastRay(origin, transform.right, line1Sensor);
-        sensor2Distance = CastRay(origin, transform.right + new Vector3(2, 0, 0), line2Sensor);
-        sensor3Distance = CastRay(origin, transform.right + new Vector3(-2, 0, 0), line3Sensor);
+        sensor1Distance = CastRay(origin, transform.forward, line1Sensor);
+        sensor2Distance = CastRay(origin, transform.right, line2Sensor);
+        sensor3Distance = CastRay(origin, -transform.forward, line3Sensor);
     }
 
     //cast ray
-    private float CastRay(Vector3 origin, Vector3 direction, GameObject lineObject)
+    private float CastRay (Vector3 origin, Vector3 direction, GameObject lineObject)
     {
         LineRenderer line = lineObject.GetComponent<LineRenderer>();
 
