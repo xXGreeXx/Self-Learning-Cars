@@ -5,26 +5,25 @@ using UnityEngine;
 public class CarBrainScript : MonoBehaviour {
 
     //define global variables
-    float engine = 0;
-    float turn = 0;
 
     //start
     void Start ()
     {
-		
+
 	}
 	
 	//update
 	void Update ()
     {
-        if (Input.GetKey(KeyCode.W)) engine = 5;
-        if (Input.GetKey(KeyCode.S)) engine = -5;
+        float x = 0;
+        float z = 0;
 
-        if (Input.GetKey(KeyCode.A)) turn = -0.5F;
-        else if (Input.GetKey(KeyCode.D)) turn = 0.5F;
-        else turn = 0;
+        if (Input.GetKey(KeyCode.W)) x = -30;
+        else if (Input.GetKey(KeyCode.S)) x = 30;
+        if (Input.GetKey(KeyCode.A)) z = 30;
+        else if (Input.GetKey(KeyCode.D)) z = -30;
 
-        MoveCar(engine, turn);
+        Camera.main.transform.position += new Vector3(z, 0, x);
 	}
 
 
@@ -33,7 +32,7 @@ public class CarBrainScript : MonoBehaviour {
     {
         Rigidbody body = gameObject.GetComponent<Rigidbody>();
 
-        body.AddTorque(new Vector3(0, turn, 0), ForceMode.Acceleration);
-        body.AddForce(transform.right * 100, ForceMode.Impulse);
+        body.AddRelativeTorque(new Vector3(0, turn, 0) / 50, ForceMode.VelocityChange);
+        body.AddRelativeForce(new Vector3(engine, 0, 0) * 50, ForceMode.Acceleration);
     }
 }
