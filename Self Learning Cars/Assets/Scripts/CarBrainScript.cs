@@ -39,16 +39,16 @@ public class CarBrainScript : MonoBehaviour {
         float[] outputs = brain.ForwardProp(inputs);
 
         //decide reward
-        float reward = brain.DecideReward(inputs, outputs);
+        brain.DecideReward(inputs, outputs);
 
         //backprop data
-        brain.BackProp(inputs, reward);
+        brain.BackProp(inputs);
 
         //add output to memory bank
         brain.MemoryBank.AddMemory(inputs, outputs);
 
         //move car
-        MoveCar(0, 0);
+        MoveCar(outputs[0], outputs[1]);
     }
 
     //move car
