@@ -8,7 +8,6 @@ public class NeuralNetwork {
     public List<List<Perceptron>> perceptrons = new List<List<Perceptron>>();
     public NeuralNetworkMemoryBank MemoryBank = new NeuralNetworkMemoryBank();
     public static readonly float LearningRate = 0.1F;
-    public static float CurrentValueOfNetwork = 0;
 
     //constructor
     public NeuralNetwork(int inputLength, int[] hiddenLengths, int outputLength)
@@ -51,74 +50,51 @@ public class NeuralNetwork {
     }
 
     //back prop
-    public void BackProp(float[] inputsToFeed)
+    public void BackProp(float[] inputsToFeed, float[] target)
     {
         float[] inputs = inputsToFeed;
 
-        //iterate over layers
-        for (int layerIndex = perceptrons.Count - 1; layerIndex > 1; layerIndex--)
+        //prop inputs forward
+        float[] outFinal = ForwardProp(inputs);
+
+        //backprop over layers
+        for (int layerPropIndex = perceptrons.Count - 1; layerPropIndex > 1; layerPropIndex--)
         {
-            List<Perceptron> layer = perceptrons[layerIndex];
-
-            //get inputs up to date
-            for (int layerIndexToProp = 1; layerIndexToProp < layerIndex; layerIndexToProp++)
+            List<Perceptron> propLayer = perceptrons[layerPropIndex];
+            
+            for (int neuronPropIndex = 0; neuronPropIndex < propLayer.Count; neuronPropIndex++)
             {
-                List<Perceptron> layerToProp = perceptrons[layerIndexToProp];
-                float[] propInputsBuffer = new float[layerToProp.Count];
+                Perceptron neuron = propLayer[neuronPropIndex];
 
-                for (int neuronIndexToProp = 0; neuronIndexToProp < layerToProp.Count; neuronIndexToProp++)
+                float[] inputsToGive = new float[perceptrons[layerPropIndex - 1].Count];
+                for (int indexOfNeuronToPullInputFrom = 0; indexOfNeuronToPullInputFrom < perceptrons[layerPropIndex - 1].Count; indexOfNeuronToPullInputFrom++)
                 {
-                    propInputsBuffer[neuronIndexToProp] = layerToProp[neuronIndexToProp].output(inputs);
+                    inputsToGive[neuronPropIndex] = perceptrons[layerPropIndex - 1][indexOfNeuronToPullInputFrom].lastOutput;
                 }
 
-                inputs = propInputsBuffer;
-            }
-
-            //iterate over neurons
-            for (int neuronIndex = 0; neuronIndex < layer.Count; neuronIndex++)
-            {
-                Perceptron p = layer[neuronIndex];
-
-                if (layerIndex == perceptrons.Count - 1)
+                if (layerPropIndex == perceptrons.Count - 1)
                 {
-                    if (CurrentValueOfNetwork > 0)
-                    {
-                        for (int i = 0; i < CurrentValueOfNetwork; i++)
-                        {
-                            float output = p.output(inputs);
-                            float[] inputsToUse = new float[inputs.Length];
-                            for (int ind = 0; ind < inputsToUse.Length; ind++)
-                            {
-                                inputsToUse[ind] = Random.Range(0.0F, 1.0F);
-                            }
-
-                            p.train(inputsToUse, output, false, LearningRate);
-                        }
-                    }
-                    else
-                    {
-                        p.train(inputs, Random.Range(CurrentValueOfNetwork, -CurrentValueOfNetwork), false, LearningRate);
-                    }
+                    neuron.train(inputsToGive, target[neuronPropIndex], false, LearningRate);
                 }
                 else
                 {
-                    float error = 0;
-                    foreach (Perceptron neuronToPullError in perceptrons[layerIndex + 1])
-                    {
-                        error += neuronToPullError.lastError;
-                    }
-                    p.train(inputs, error, true, LearningRate);
+                    float combinedError = 0;
+                    foreach (Perceptron p in perceptrons[layerPropIndex + 1])
+                        combinedError += p.lastError * p.weights[neuronPropIndex];
+
+                    neuron.train(inputsToGive, combinedError, true, LearningRate);
                 }
             }
         }
+
     }
 
     //decide reward
-    public void DecideReward(float[] inputsToFeed, float[] outputsToFeed)
+    public float DecideReward(float[] inputsToFeed, float[] outputsToFeed)
     {
-        float reward = 0;
+        float reward = -1;
 
 
-        CurrentValueOfNetwork = reward;
+        return reward;
     }
 }

@@ -6,6 +6,8 @@ public class CarBrainScript : MonoBehaviour {
 
     //define global variables
     NeuralNetwork brain;
+    public static float MaxSpeed = 15.5F;
+    public static float MaxTurn = 0.25F;
 
     //start
     void Start ()
@@ -14,7 +16,7 @@ public class CarBrainScript : MonoBehaviour {
 	}
 	
 	//update
-	void Update ()
+	void FixedUpdate ()
     {
         //TOTALLY NOT RELATED move camera with WASD
         float x = 0;
@@ -39,16 +41,41 @@ public class CarBrainScript : MonoBehaviour {
         float[] outputs = brain.ForwardProp(inputs);
 
         //decide reward
-        brain.DecideReward(inputs, outputs);
+        float reward = brain.DecideReward(inputs, outputs);
 
         //backprop data
-        brain.BackProp(inputs);
+        if (reward > 0)
+        {
+            while (reward > 0)
+            {
+                brain.BackProp(new float[] { Random.Range(-30F, 30F), Random.Range(-30F, 30F), Random.Range(-30F, 30F) }, outputs);
+
+                reward--;
+            }
+        }
+        else if(reward < 0)
+        {
+            while (reward < 0)
+            {
+                brain.BackProp(inputs, new float[] { Random.Range(-15F, 15F), Random.Range(-15F, 15F) });
+
+                reward++;
+            }
+        }
 
         //add output to memory bank
         brain.MemoryBank.AddMemory(inputs, outputs);
 
         //move car
-        MoveCar(outputs[0], outputs[1]);
+        float engine = outputs[0];
+        float turn = outputs[1];
+
+        if (engine > MaxSpeed) engine = MaxSpeed;
+        if (engine < -MaxSpeed) engine = -MaxSpeed;
+        if (turn > MaxTurn) turn = MaxTurn;
+        if (turn < -MaxTurn) turn = -MaxTurn;
+
+        MoveCar(engine, turn);
     }
 
     //move car
